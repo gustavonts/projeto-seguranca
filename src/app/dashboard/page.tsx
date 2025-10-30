@@ -29,15 +29,26 @@ export default function Dashboard() {
     });
   }, []);
 
-  if (loading) return <p>Carregando...</p>;
+  if (loading) return <p className="text-gray-600">Carregando...</p>;
 
   return (
-    <div style={{ padding:20 }}>
-      <h1>Dashboard</h1>
-      <button onClick={() => signOut()}>Sair</button>
-      <ul>
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-semibold">Dashboard</h1>
+        <button
+          className="rounded-md border px-3 py-2 text-sm hover:bg-gray-50"
+          onClick={() => signOut()}
+        >
+          Sair
+        </button>
+      </div>
+
+      <ul className="grid gap-3 sm:grid-cols-2">
         {docs.map(d => (
-          <li key={d.id}>{d.title} (Nível {d.level})</li>
+          <li key={d.id} className="rounded-lg border bg-white p-4 shadow-sm">
+            <p className="font-medium">{d.title}</p>
+            <p className="text-sm text-gray-600">Nível {d.level}</p>
+          </li>
         ))}
       </ul>
     </div>
