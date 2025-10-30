@@ -1,27 +1,24 @@
 import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { signToken } from "../../../../lib/auth";
-
-const fakeUser = {
-  id: 1,
-  email: "admin@local",
-  passwordHash: bcrypt.hashSync("123456", 10), // senha
-  level: 2, // SECRET
-};
+import { findUserByEmailExact } from "../../../../lib/db";
 
 export async function POST(req: Request) {
   const { email, password } = await req.json();
 
-  if (email !== fakeUser.email) 
+  const dbUser = typeof email === "string" ? findUserByEmailExact(email) : undefined;
+  if (!dbUser) {
     return NextResponse.json({ error: "Usuário não encontrado" }, { status: 401 });
+  }
 
-  const valid = bcrypt.compareSync(password, fakeUser.passwordHash);
-  if (!valid) 
+  const valid = typeof password === "string" && bcrypt.compareSync(password, dbUser.passwordHash);
+  if (!valid) {
     return NextResponse.json({ error: "Senha incorreta" }, { status: 401 });
+  }
 
-  const token = signToken(fakeUser);
+  const token = signToken({ id: dbUser.id, email: dbUser.email, level: dbUser.level });
 
-  const res = NextResponse.json({ message: "Login ok", level: fakeUser.level });
+  const res = NextResponse.json({ message: "Login ok", level: dbUser.level });
   res.cookies.set("app_token", token, {
     httpOnly: true,
     sameSite: "strict",

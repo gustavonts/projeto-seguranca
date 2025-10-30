@@ -66,3 +66,18 @@ export function findUserById(id: number): DbUser | undefined {
   return stmt.get(id) as DbUser | undefined;
 }
 
+export function findUserByEmailExact(email: string): (DbUser & { passwordHash: string }) | undefined {
+  const db = getDb();
+  const stmt = db.prepare(`SELECT id, email, level, createdAt, passwordHash FROM users WHERE email = ?`);
+  return stmt.get(email) as (DbUser & { passwordHash: string }) | undefined;
+}
+
+export function createUser(email: string, passwordHash: string, level: number): DbUser {
+  const db = getDb();
+  const insert = db.prepare(`INSERT INTO users(email, passwordHash, level) VALUES(?,?,?)`);
+  const info = insert.run(email, passwordHash, level);
+  const id = Number(info.lastInsertRowid);
+  const row = db.prepare(`SELECT id, email, level, createdAt FROM users WHERE id = ?`).get(id) as DbUser;
+  return row;
+}
+
